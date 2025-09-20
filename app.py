@@ -37,7 +37,7 @@ if langchain_api_key:
 
 try:
     
-    repo_id = "mistralai/Mistral-7B-Instruct-v0.2"
+    repo_id = "google/flan-t5-xxl"
     llm = HuggingFaceEndpoint(
         repo_id=repo_id, 
         max_new_tokens=512, 
