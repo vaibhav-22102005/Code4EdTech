@@ -28,7 +28,7 @@ google_api_key = os.getenv("GOOGLE_API_KEY")
 langchain_api_key = os.getenv("LANGCHAIN_API_KEY")
 
 try:
-    llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.2)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.2)
     embeddings_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
 except Exception as e:
     st.error(f"Error initializing Google AI models. Please ensure your API key is set correctly. Error: {e}")
