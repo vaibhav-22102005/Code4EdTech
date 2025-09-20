@@ -37,7 +37,7 @@ if langchain_api_key:
 
 try:
     
-    repo_id = "HuggingFaceH4/zephyr-7b-beta"
+    repo_id = "mistralai/Mixtral-8x7B-Instruct-v0.1"
     llm = HuggingFaceEndpoint(
         repo_id=repo_id, 
         max_new_tokens=512, 
