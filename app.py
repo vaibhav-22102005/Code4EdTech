@@ -1,37 +1,52 @@
 import os
 import re
 import io
-from flask.cli import load_dotenv
 import streamlit as st
 from typing import TypedDict, List
+from dotenv import load_dotenv
 
 
 import PyPDF2
 import docx
 
 
-from langchain_core.messages import BaseMessage, HumanMessage
+from langchain_core.messages import BaseMessage
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import StateGraph, END
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain.chains.combine_documents import create_stuff_documents_chain
 
+
+from langchain_huggingface import HuggingFaceEndpoint, HuggingFaceEmbeddings
 
 
 load_dotenv()
 
 
-google_api_key = os.getenv("GOOGLE_API_KEY")
+hf_api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 langchain_api_key = os.getenv("LANGCHAIN_API_KEY")
 
+if not hf_api_token:
+    st.error("Hugging Face API Token not found. Please set it in your .env file.")
+    st.stop()
+
+if langchain_api_key:
+    os.environ["LANGCHAIN_TRACING_V2"] = "true"
+    os.environ["LANGCHAIN_API_KEY"] = langchain_api_key
+
 try:
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.2)
-    embeddings_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    
+    repo_id = "mistralai/Mistral-7B-Instruct-v0.2"
+    llm = HuggingFaceEndpoint(
+        repo_id=repo_id, max_new_tokens=512, temperature=0.2, token=hf_api_token
+    )
+    
+    
+    embeddings_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
 except Exception as e:
-    st.error(f"Error initializing Google AI models. Please ensure your API key is set correctly. Error: {e}")
+    st.error(f"Error initializing Hugging Face models. Please ensure your API token is set correctly. Error: {e}")
     st.stop()
 
 
@@ -103,7 +118,7 @@ def hard_match_node(state: AnalysisState):
         return {"hard_match_score": 0.0}
 
     for skill in state["extracted_skills"]:
-        
+       
         if re.search(r'\b' + re.escape(skill.lower()) + r'\b', resume_lower):
             found_skills += 1
             
@@ -112,7 +127,7 @@ def hard_match_node(state: AnalysisState):
 
 def semantic_match_node(state: AnalysisState):
     """Performs a semantic similarity check using embeddings."""
-    if state.get("error"): return {}
+    if state.get("error"): return {} 
     
     try:
         
@@ -121,7 +136,7 @@ def semantic_match_node(state: AnalysisState):
         vector_store = FAISS.from_documents(documents, embeddings_model)
         retriever = vector_store.as_retriever(k=5) 
 
-       
+        
         prompt = ChatPromptTemplate.from_template(
             "Based on the following resume context, how well does the candidate's experience align with the job description? "
             "Answer with a percentage score from 0 to 100, where 100 is a perfect match. "
@@ -169,6 +184,7 @@ def scoring_node(state: AnalysisState):
 def feedback_node(state: AnalysisState):
     """Generates personalized feedback for the student."""
     if state.get("error"): return {}
+    
     
     resume_lower = state["resume_text"].lower()
     missing_skills = [
@@ -265,7 +281,6 @@ if analyze_button:
         st.error("Could not extract text from the resume. The file might be corrupted or empty.")
         st.stop()
     
-   
     with st.spinner("Analyzing... This may take a moment."):
         initial_state = {"jd_text": jd_text, "resume_text": resume_text}
         result_state = app.invoke(initial_state)
@@ -275,13 +290,13 @@ if analyze_button:
     else:
         st.success("Analysis Complete!")
         
-       
+        
         st.header("Analysis Results")
         
         score = result_state.get("final_score", 0)
         verdict = result_state.get("verdict", "N/A")
         
-        
+       
         st.metric(label="Relevance Score", value=f"{score}%", delta=verdict)
         st.progress(score)
         
@@ -297,3 +312,6 @@ if analyze_button:
 
             st.markdown("**Personalized Feedback for Student:**")
             st.success(result_state.get("feedback", "No feedback generated."))
+
+
+
