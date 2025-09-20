@@ -243,7 +243,7 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.header("Job Description")
-    jd_file = st.file_uploader("Upload JD (.pdf)", type=["pdf"])
+    jd_file = st.file_uploader("Upload JD (.txt)", type=["txt"])
     jd_text_area = st.text_area("Or paste the Job Description here", height=300)
 
 with col2:
