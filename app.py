@@ -1,6 +1,7 @@
 import os
 import re
 import io
+from langchain_google_genai import ChatGoogleGenerativeAI
 import streamlit as st
 from typing import TypedDict, List
 from dotenv import load_dotenv
@@ -24,31 +25,28 @@ from langchain_huggingface import HuggingFaceEndpoint, HuggingFaceEmbeddings
 load_dotenv()
 
 
-hf_api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+google_api_key = os.getenv("GOOGLE_API_KEY")
 langchain_api_key = os.getenv("LANGCHAIN_API_KEY")
 
-if not hf_api_token:
-    st.error("Hugging Face API Token not found. Please set it in your .env file.")
+if not google_api_key:
+    st.error("Google API Key not found. Please set it in your .env file.")
     st.stop()
+
+os.environ["GOOGLE_API_KEY"] = google_api_key
 
 if langchain_api_key:
     os.environ["LANGCHAIN_TRACING_V2"] = "true"
     os.environ["LANGCHAIN_API_KEY"] = langchain_api_key
 
 try:
-    
-    repo_id = "mistralai/Mixtral-8x7B-Instruct-v0.1"
-    llm = HuggingFaceEndpoint(
-        repo_id=repo_id, 
-        max_new_tokens=512, 
-        temperature=0.2, 
-        huggingfacehub_api_token=hf_api_token  
-    )
 
+    llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.2)
+    
+    
     embeddings_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
 except Exception as e:
-    st.error(f"Error initializing Hugging Face models. Please ensure your API token is set correctly. Error: {e}")
+    st.error(f"Error initializing models. Is your Google API Key correct? Error: {e}")
     st.stop()
 
 def extract_text_from_pdf(file_bytes):
