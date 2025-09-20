@@ -40,7 +40,7 @@ if langchain_api_key:
 
 try:
 
-    llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.2)
+    llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0.2)
     
     
     embeddings_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
