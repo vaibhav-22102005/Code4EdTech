@@ -39,17 +39,17 @@ try:
     
     repo_id = "mistralai/Mistral-7B-Instruct-v0.2"
     llm = HuggingFaceEndpoint(
-        repo_id=repo_id, max_new_tokens=512, temperature=0.2, token=hf_api_token
+        repo_id=repo_id, 
+        max_new_tokens=512, 
+        temperature=0.2, 
+        huggingfacehub_api_token=hf_api_token  
     )
-    
-    
+
     embeddings_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
 except Exception as e:
     st.error(f"Error initializing Hugging Face models. Please ensure your API token is set correctly. Error: {e}")
     st.stop()
-
-
 
 def extract_text_from_pdf(file_bytes):
     """Extracts text from a PDF file."""
