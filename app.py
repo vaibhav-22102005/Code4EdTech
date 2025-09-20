@@ -37,7 +37,7 @@ if langchain_api_key:
 
 try:
     
-    repo_id = "google/flan-t5-xxl"
+    repo_id = "HuggingFaceH4/zephyr-7b-beta"
     llm = HuggingFaceEndpoint(
         repo_id=repo_id, 
         max_new_tokens=512, 
